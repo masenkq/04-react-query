@@ -1,17 +1,17 @@
-import type { Movie } from '../../types/movie';
+import { Movie } from '../../types/movie';
 import MovieCard from '../MovieCard/MovieCard';
 import styles from './MovieList.module.css';
 
 interface MovieListProps {
-    movies: Movie[];
+  movies: Movie[];
 }
 
 export default function MovieList({ movies }: MovieListProps) {
-    return (
-        <div className={styles.list}>
-            {movies.map(movie => (
-                <MovieCard key={movie.id} movie={movie} />
-            ))}
-        </div>
-    );
+  return (
+    <div className={styles.movieList}>
+      {movies.map(movie => (
+        <MovieCard key={movie.id} movie={movie} />
+      ))}
+    </div>
+  );
 }

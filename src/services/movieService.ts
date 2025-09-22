@@ -23,9 +23,18 @@ const axiosInstance = axios.create({
 });
 
 export const fetchMovies = async (query: string, page: number = 1): Promise<MoviesResponse> => {
+    if (!query.trim()) {
+        return {
+            page: 1,
+            results: [],
+            total_pages: 0,
+            total_results: 0
+        };
+    }
+
     const response = await axiosInstance.get<MoviesResponse>('/search/movie', {
         params: {
-            query,
+            query: query.trim(),
             page,
         },
     });
