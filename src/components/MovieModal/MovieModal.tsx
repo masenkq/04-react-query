@@ -1,70 +1,39 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import type { Movie } from '../../types/movie';
+import type{ Movie } from '../../types/movie';
 import styles from './MovieModal.module.css';
 
 interface MovieModalProps {
-    movie: Movie | null;
-    onClose: () => void;
+  movie: Movie;
+  onClose: () => void;
 }
 
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
-    useEffect(() => {
-        if (!movie) return;
+  const backdropUrl = movie.backdrop_path 
+    ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+    : 'https://via.placeholder.com/1280x720?text=No+Image';
 
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
+  const releaseYear = movie.release_date 
+    ? new Date(movie.release_date).getFullYear()
+    : 'Unknown';
 
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.body.style.overflow = 'unset';
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [movie, onClose]);
-
-    if (!movie) return null;
-
-    const handleBackdropClick = (e: React.MouseEvent) => {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
-    };
-
-    return createPortal(
-        <div className={styles.backdrop} onClick={handleBackdropClick} role="dialog" aria-modal="true">
-            <div className={styles.modal}>
-                <button 
-                    className={styles.closeButton} 
-                    onClick={onClose}
-                    aria-label="Close modal"
-                >
-                    &times;
-                </button>
-                <img
-                    src={movie.backdrop_path 
-                        ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-                        : 'https://via.placeholder.com/1280x720?text=No+Image'
-                    }
-                    alt={movie.title}
-                    className={styles.image}
-                />
-                <div className={styles.content}>
-                    <h2>{movie.title}</h2>
-                    <p>{movie.overview}</p>
-                    <p>
-                        <strong>Release Date:</strong> {movie.release_date}
-                    </p>
-                    <p>
-                        <strong>Rating:</strong> {movie.vote_average.toFixed(1)}/10
-                    </p>
-                </div>
-            </div>
-        </div>,
-        document.body
-    );
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.closeButton} onClick={onClose}>×</button>
+        
+        <div className={styles.modalHeader}>
+          <img src={backdropUrl} alt={movie.title} className={styles.backdrop} />
+          <div className={styles.movieInfo}>
+            <h2 className={styles.title}>{movie.title}</h2>
+            <p className={styles.year}>Year: {releaseYear}</p>
+            <p className={styles.rating}>Rating: {movie.vote_average.toFixed(1)}/10</p>
+          </div>
+        </div>
+        
+        <div className={styles.modalBody}>
+          <h3>Overview</h3>
+          <p className={styles.overview}>{movie.overview}</p>
+        </div>
+      </div>
+    </div>
+  );
 }

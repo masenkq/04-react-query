@@ -1,0 +1,41 @@
+.movieCard {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.movieCard:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.poster {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.info {
+    padding: 12px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.year, .rating {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.overview {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #777;
+    margin-top: 8px;
+}

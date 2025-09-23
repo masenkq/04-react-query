@@ -3,13 +3,19 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import ReactPaginate from 'react-paginate';
 import SearchBar from '../SearchBar/SearchBar';
-import MovieList from '../MovieList/MovieList';
+import MovieGrid from '../MovieGrid/MovieGrid';
+import MovieModal from '../MovieModal/MovieModal';
+import Loader from '../Loader/Loader';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import { fetchMovies } from '../../services/movieService';
+import type{ Movie } from '../../types/movie';
 import styles from './App.module.css';
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: moviesData,
@@ -22,7 +28,8 @@ export default function App() {
     queryKey: ['movies', searchQuery, page],
     queryFn: () => fetchMovies(searchQuery, page),
     enabled: !!searchQuery.trim(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 
   // Show error toast if query fails
@@ -49,6 +56,16 @@ export default function App() {
     setPage(selected + 1);
   };
 
+  const handleMovieSelect = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
   const movies = moviesData?.results || [];
   const totalPages = moviesData?.total_pages || 0;
 
@@ -58,14 +75,15 @@ export default function App() {
       <SearchBar onSubmit={handleSearch} />
       
       <main className={styles.main}>
-        {isLoading ? (
-          <div className={styles.loading}>Loading...</div>
+        {isLoading && !moviesData ? (
+          <Loader />
+        ) : isError ? (
+          <ErrorMessage message="Failed to load movies. Please try again." />
         ) : (
           <>
-            {isFetching && (
-              <div className={styles.loading}>Updating...</div>
-            )}
-            <MovieList movies={movies} />
+            {isFetching && movies.length > 0 && <Loader />}
+            
+            <MovieGrid movies={movies} onSelect={handleMovieSelect} />
             
             {totalPages > 1 && (
               <ReactPaginate
@@ -82,6 +100,10 @@ export default function App() {
               />
             )}
           </>
+        )}
+        
+        {isModalOpen && selectedMovie && (
+          <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
         )}
       </main>
     </div>
