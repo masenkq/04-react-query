@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type{ Movie } from '../../types/movie';
 import styles from './MovieModal.module.css';
 
@@ -7,6 +9,27 @@ interface MovieModalProps {
 }
 
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
+  // Handle Escape key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Disable body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+
+    // Add event listener for Escape key
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
   const backdropUrl = movie.backdrop_path 
     ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
     : 'https://via.placeholder.com/1280x720?text=No+Image';
@@ -15,10 +38,23 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
     ? new Date(movie.release_date).getFullYear()
     : 'Unknown';
 
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+  // Handle backdrop click (only on the overlay, not on the content)
+  const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  return createPortal(
+    <div className={styles.modalOverlay} onClick={handleBackdropClick}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={onClose}>×</button>
+        <button 
+          className={styles.closeButton} 
+          onClick={onClose}
+          aria-label="Close modal"
+        >
+          ×
+        </button>
         
         <div className={styles.modalHeader}>
           <img src={backdropUrl} alt={movie.title} className={styles.backdrop} />
@@ -34,6 +70,7 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
           <p className={styles.overview}>{movie.overview}</p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
